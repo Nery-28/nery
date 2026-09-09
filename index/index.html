@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Monthsary!</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Georgia', serif;
+            overflow: hidden;
+            background-color: #1a0f14;
+        }
+
+        /* Photo Collage Background Container */
+        .bg-collage {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 10px;
+            padding: 10px;
+            z-index: 0;
+        }
+
+        /* Container for each background photo frame */
+        .bg-frame {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            border-radius: 12px;
+            background-color: rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        /* Blurred background copy to fill gaps nicely */
+        .bg-frame .blur-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: blur(10px) brightness(0.35);
+            transform: scale(1.1);
+        }
+
+        /* Full Uncropped Photo Display */
+        .bg-frame .full-img {
+            position: relative;
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            border-radius: 6px;
+            z-index: 1;
+            filter: brightness(0.85);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+        }
+
+        .container {
+            position: relative;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Extra Large Envelope Wrapper */
+        .wrapper {
+            position: relative;
+            width: 720px;
+            height: 480px;
+            background-color: #e91e63;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            box-shadow: 0 25px 55px rgba(0, 0, 0, 0.6);
+            cursor: pointer;
+            margin-top: 280px;
+        }
+
+        /* Top triangular flap */
+        .lid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 360px solid transparent;
+            border-right: 360px solid transparent;
+            border-top: 260px solid #c2185b;
+            transform-origin: top;
+            transition: transform 0.6s ease-in-out, z-index 0.3s;
+            z-index: 3;
+        }
+
+        /* Heart seal */
+        .heart-seal {
+            position: absolute;
+            top: -230px;
+            left: -32px;
+            font-size: 65px;
+            z-index: 4;
+        }
+
+        /* Envelope front folds */
+        .envelope-front {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 360px solid #d81b60;
+            border-right: 360px solid #d81b60;
+            border-bottom: 250px solid #e91e63;
+            border-top: 250px solid transparent;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            z-index: 2;
+        }
+
+        /* Extra Large Letter */
+        .letter {
+            position: absolute;
+            top: 20px;
+            left: 25px;
+            width: 670px;
+            height: 440px;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 35px 40px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            transition: transform 0.6s ease-in-out;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            background-image: radial-gradient(#f8bbd0 1.5px, transparent 1.5px);
+            background-size: 24px 24px;
+        }
+
+        /* Opening state animations */
+        .wrapper.open .lid {
+            transform: rotateX(180deg);
+            z-index: 0;
+        }
+
+        .wrapper.open .letter {
+            transform: translateY(-360px);
+            z-index: 10;
+            transition-delay: 0.3s;
+        }
+
+        .page {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            height: 100%;
+            width: 100%;
+        }
+
+        .page.active {
+            display: flex;
+        }
+
+        /* Scrollable container for text */
+        .letter-content {
+            overflow-y: auto;
+            max-height: 290px;
+            padding-right: 12px;
+            margin-bottom: 15px;
+        }
+
+        /* Custom scrollbar style */
+        .letter-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        .letter-content::-webkit-scrollbar-thumb {
+            background-color: #f48fb1;
+            border-radius: 10px;
+        }
+
+        /* Extra Large Header Text */
+        .letter h1 {
+            font-size: 2.2rem;
+            color: #ad1457;
+            font-family: 'Georgia', serif;
+            margin-bottom: 16px;
+            font-weight: bold;
+        }
+
+        /* Extra Large Paragraph Text */
+        .letter p {
+            font-size: 1.45rem;
+            color: #333;
+            line-height: 1.6;
+            text-align: left;
+        }
+
+        /* Enlarged Flower Image Styling */
+        .flower-img {
+            width: 200px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 50%;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+            margin: 10px auto;
+            display: block;
+        }
+
+        /* Extra Large Action Buttons */
+        .btn {
+            background-color: #e91e63;
+            color: white;
+            border: none;
+            padding: 12px 32px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            position: relative;
+            z-index: 20;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        .btn:hover {
+            background-color: #c2185b;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Collage Background with Full Uncropped Pictures -->
+    <div class="bg-collage">
+        <div class="bg-frame">
+            <img class="blur-bg" src="1.jpg" alt="">
+            <img class="full-img" src="1.jpg" alt="Memory 1">
+        </div>
+        <div class="bg-frame">
+            <img class="blur-bg" src="2.jpg" alt="">
+            <img class="full-img" src="2.jpg" alt="Memory 2">
+        </div>
+        <div class="bg-frame">
+            <img class="blur-bg" src="3.jpg" alt="">
+            <img class="full-img" src="3.jpg" alt="Memory 3">
+        </div>
+        <div class="bg-frame">
+            <img class="blur-bg" src="4.jpg" alt="">
+            <img class="full-img" src="4.jpg" alt="Memory 4">
+        </div>
+        <div class="bg-frame">
+            <img class="blur-bg" src="5.jpg" alt="">
+            <img class="full-img" src="5.jpg" alt="Memory 5">
+        </div>
+        <div class="bg-frame">
+            <img class="blur-bg" src="6.jpg" alt="">
+            <img class="full-img" src="6.jpg" alt="Memory 6">
+        </div>
+        <div class="bg-frame">
+            <img class="blur-bg" src="7.jpg" alt="">
+            <img class="full-img" src="7.jpg" alt="Memory 7">
+        </div>
+        <div class="bg-frame">
+            <img class="blur-bg" src="1.jpg" alt="">
+            <img class="full-img" src="1.jpg" alt="Memory 8">
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Envelope Container -->
+        <div class="wrapper" id="envelope" onclick="openEnvelope()">
+            <div class="lid">
+                <span class="heart-seal">❤️</span>
+            </div>
+            
+            <div class="letter" onclick="event.stopPropagation()">
+                <!-- Page 1 -->
+                <div class="page active" id="page1">
+                    <div class="letter-content">
+                        <h1>HAPPY 11TH MONTHSARYYY MY BABYYYY LOVE LOVE PO KITAAA.</h1>
+                        <p>Sisimulan ko tong letter na to sa pag thank you. Thank you kasi hanggang ngayon nasa tabi padin kita. Thank you kasi hindi ka nagsasawang umintindi sakin. Thank you kasi love love mo padin po ako kahit sobrang kulit kulit ko. Thank you kasi pinapayagan moko sa gusto ko pinagbibigyan moko maglaro, binibilhan moko ng mga gamit na kailangan ko. Thank you po kasi nituturuan mo ako po lagiii. You always make me so special and loved.Advance thank you din sa walang sawang pagmamahal sakin asawa ko. Pangalawa is I'm sorry po kasi sobrang kulit ko po mahal. Sorry kasi minsan nasossobrahan ako sa paglalaro, sa mga jokes ko. Sorry po kasi napapagod kana po sakin kasi ang kulit kulit ko and sorry po kung may pagbabago ako mahal ko hindi ko po napapansin na nagbbaago po ako pero ikaw po yung nakakapansin ikaw po yung nakakaramdam sorry po mahal, pero wag mo pong kalimutan na mahal na mahal na mahal po kita mahal ko. Lastly, thank you baby sa walang sawang pagsuporta sakin. Let's make more memories lets make more moneyyy and let's do what we want po, okayy? Ikaw po gustong gusto kong makasama sa habang buhayy poo okayyyy wag moko iiwan ahhhhh. I will always make you feel loved and make you happy na to the point na hindi mo na ako iiwan po. I WILLLLL ALWAYSSSS BE HEREEE FOR YOUUUU. Love na love ko ang teptep ko na yannn. I LOVE YOU SO MUCHHHHHH!!! MWAAAAAAA 🤍</p>
+                    </div>
+                    <button class="btn" onclick="nextPage(event)">Next ❤️</button>
+                </div>
+
+                <!-- Page 2 (Tulip Bouquet) -->
+                <div class="page" id="page2">
+                    <h1 style="font-family: 'Brush Script MT', cursive, serif; font-size: 2.8rem;">TULIPSSSS BOUQUETTT</h1>
+                    <img class="flower-img" src="images.jpg" alt="Tulips Bouquet">
+                    <p style="text-align: center; font-size: 1.5rem; line-height: 1.4;">TULIPSSS FOR MY TEPTEPPPPP I LOVE YOU SO MUCHH ❤️</p>
+                    <button class="btn" onclick="prevPage(event)">Back</button>
+                </div>
+            </div>
+
+            <div class="envelope-front"></div>
+        </div>
+    </div>
+
+    <script>
+        function openEnvelope() {
+            document.getElementById('envelope').classList.add('open');
+        }
+
+        function nextPage(event) {
+            if (event) event.stopPropagation();
+            document.getElementById('page1').classList.remove('active');
+            document.getElementById('page2').classList.add('active');
+        }
+
+        function prevPage(event) {
+            if (event) event.stopPropagation();
+            document.getElementById('page2').classList.remove('active');
+            document.getElementById('page1').classList.add('active');
+        }
+    </script>
+</body>
+</html>
